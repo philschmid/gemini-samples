@@ -27,7 +27,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Structured Outputs](examples/gemini-structured-outputs.ipynb) - Generate structured JSON outputs using Pydantic
 - [Meta Prompts](examples/gemini-meta-prompt-structured-outputs.ipynb) - Generate JSON schemas dynamically using meta prompts
 - [Audio Transcription](examples/gemini-transcribe-with-timestamps.ipynb) - Transcribe audio with precise timestamps
-- [Gemini MCP Example](examples/gemini-mcp-example.ipynb) - Example showcasing Model-Code Pairing (MCP)
+- [Gemini MCP Example](examples/gemini-mcp-example.ipynb) - Example showcasing Model Context Protocol (MCP)
 - [Gemini Analyze & Transcribe YouTube](examples/gemini-analyze-transcribe-youtube.ipynb) - Analyze and transcribe YouTube videos
 - [Gemini Native Image Output](examples/gemini-native-image-out.ipynb) - Generate images directly with Gemini 2.0 Flash experimental model
 - [Gemini File Editing](examples/gemini-file-editing.ipynb) - Example showcasing file editing capabilities
