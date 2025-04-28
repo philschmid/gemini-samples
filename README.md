@@ -2,6 +2,24 @@
 
 This repository contains personal tiny samples, snippets and guides showcasing cool experiments and implementations using Google DeepMind Gemini models.
 
+```
+├── examples/
+│   └── gemini-with-openai-sdk.ipynb
+├── guides/
+│   └── function-calling.ipynb
+├── scripts/
+│   └── gemini-browser-use.py
+├── javascript-examples/
+│   └── gemini-native-image-out.js
+├── LICENSE
+└── README.md
+```
+
+## Guides:
+
+- [Function Calling Guide](guides/function-calling.ipynb) - Comprehensive guide on implementing function calling
+- [ReAct Agent](guides/langgraph-react-agent.ipynb) - Guide on building a ReAct agent with LangGraph and Gemini
+
 ## Examples
 
 - [Gemini with OpenAI SDK](examples/gemini-with-openai-sdk.ipynb) - Use Gemini models with the OpenAI SDK
@@ -11,9 +29,17 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Audio Transcription](examples/gemini-transcribe-with-timestamps.ipynb) - Transcribe audio with precise timestamps
 - [Gemini MCP Example](examples/gemini-mcp-example.ipynb) - Example showcasing Model-Code Pairing (MCP)
 - [Gemini Analyze & Transcribe YouTube](examples/gemini-analyze-transcribe-youtube.ipynb) - Analyze and transcribe YouTube videos
-- [Function Calling Guide](guides/function-calling.ipynb) - Comprehensive guide on implementing function calling
 - [Gemini Native Image Output](examples/gemini-native-image-out.ipynb) - Generate images directly with Gemini 2.0 Flash experimental model
+- [Gemini File Editing](examples/gemini-file-editing.ipynb) - Example showcasing file editing capabilities
+- [Gemini LangChain Integration](examples/gemini-langchain.ipynb) - Use Gemini models with LangChain
+- [Gemini Code Executor Data Analysis](examples/gemini-code-executor-data-analysis.ipynb) - Example of data analysis using Gemini code execution
+- [Gemini ADK MCP](examples/gemini-adk-mcp.ipynb) - Example using Gemini with ADK for MCP
+- [Gemini PydanticAI Agent](examples/gemini-pydanticai-agent.ipynb) - Build agents using Gemini and PydanticAI
 
+
+## Scripts
+- [Gemini Browser Use](scripts/gemini-browser-use.py) - Example script for using Gemini with browser interaction.
+- [Gemini MCP Agent](scripts/gemini-mcp-agent.py) - A basic agent script demonstrating MCP.
 
 ### JavaScript Examples
 
@@ -24,18 +50,6 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 
 - [Gemma with GenAI SDK](examples/gemma-with-genai-sdk.ipynb) - Use Gemma 3 27B It with Google's GenAI API
 - [Gemma Function Calling](examples/gemma-function-calling.ipynb) - Implement function calling with Gemma 3 27B
-
-
-
-## Repository Structure
-```
-├── examples/
-│   └── gemini-with-openai-sdk.ipynb
-├── guides/
-│   └── function-calling.ipynb
-├── LICENSE
-└── README.md
-```
 
 ## How to Use
 
