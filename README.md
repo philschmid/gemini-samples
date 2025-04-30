@@ -35,6 +35,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini Code Executor Data Analysis](examples/gemini-code-executor-data-analysis.ipynb) - Example of data analysis using Gemini code execution
 - [Gemini ADK MCP](examples/gemini-adk-mcp.ipynb) - Example using Gemini with ADK for MCP
 - [Gemini PydanticAI Agent](examples/gemini-pydanticai-agent.ipynb) - Build agents using Gemini and PydanticAI
+- [Gemini Context Caching](examples/gemini-context-caching.ipynb) - Example showcasing context caching and saving up to 75% on costs with Gemini
 
 
 ## Scripts
