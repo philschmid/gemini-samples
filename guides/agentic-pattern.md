@@ -45,13 +45,7 @@ We will cover the following patterns:
 
 The output of one LLM call sequentially feeds into the input of the next LLM call. This pattern decomposes a task into a fixed sequence of steps. Each step is handled by an LLM call that processes the output from the preceding one. It's suitable for tasks that can be cleanly broken down into predictable, sequential subtasks. 
 
-```mermaid
-graph TD
-    A[User Query] --> B(LLM 1);
-    B --> C[Output 1];
-    C --> D(LLM 2);
-    D --> E[Final Output];
-```
+![Prompt Chaining](../assets/agentic-patterns/prompt-chaining.png)
 
 Use Cases:
 *   Generating a structured document: LLM 1 creates an outline, LLM 2 validates the outline against criteria, LLM 3 writes the content based on the validated outline.
@@ -63,15 +57,7 @@ Use Cases:
 
 An initial LLM acts as a router, classifying the user's input and directing it to the most appropriate specialized task or LLM. This pattern implements a separation of concerns and allows for optimizing individual downstream tasks (using specialized prompts, different models, or specific tools) in isolation. It improves efficiency and potentially reduces costs by using smaller models for simpler tasks. When a task is routed, the selected agent "takes over" responsibility for completion.
 
-```mermaid
-graph TD
-    A[User Query] --> B(LLM Router);
-    B --> C{Decision?};
-    C -- Route A --> D(LLM Task A);
-    C -- Route B --> E(LLM Task B);
-    D --> F[Final Output];
-    E --> F;
-```
+![Routing or Handoff](../assets/agentic-patterns/routing-or-handoff.png)
 
 
 Use Cases:
@@ -84,14 +70,7 @@ Use Cases:
 
 A task is broken down into independent subtasks that are processed simultaneously by multiple LLMs, with their outputs being aggregated. This pattern uses concurrency for tasks. The initial query (or parts of it) is sent to multiple LLMs in parallel with individual prompts/goals. Once all branches are complete, their individual results are collected and passed to a final aggregator LLM, which synthesizes them into the final response. This can improve latency if subtasks don't depend on each other, or enhance quality through techniques like majority voting or generating diverse options.
 
-```mermaid
-graph TD
-    A[User Query] --> B(LLM 1);
-    A --> C(LLM 2);
-    B --> D(LLM Aggregator);
-    C --> D;
-    D --> E[Final Output];
-```
+![Parallelization](../assets/agentic-patterns/parallelization.png)
 
 Use Cases:
 *   RAG with query decomposition: Breaking a complex query into sub-queries, running retrievals for each in parallel, and synthesizing the results.
@@ -104,15 +83,7 @@ Use Cases:
 
 An agent evaluates its own output and uses that feedback to refine its response iteratively. This pattern is also known as Evaluator-Optimizer and uses a self-correction loop. An initial LLM generates a response or completes a task. A second LLM step (or even the same LLM with a different prompt) then acts as a reflector or evaluator, critiquing the initial output against the requirements or desired quality. This critique (feedback) is then fed back, prompting the LLM to produce a refined output. This cycle can repeat until the evaluator confirms the requirements are met or a satisfing output is achieved.
 
-```mermaid
-graph TD
-    A[User Query] --> B(LLM Generate);
-    B --> C[Initial Output];
-    C --> D(LLM Reflect);
-    D --> E[Feedback];
-    E --> F(LLM Generate Refined);
-    F --> G[Final Output];
-```
+![Reflection](../assets/agentic-patterns/reflection.png)
 
 Use Cases:
 *   Code generation: Writing code, executing it, using error messages or test results as feedback to fix bugs.
@@ -124,16 +95,7 @@ Use Cases:
 
 LLM has the ability to invoke external functions or APIs to interact with the outside world, retrieve information, or perform actions. This pattern often referred to as Function Calling and is the most widely recognized pattern. The LLM is provided with definitions (name, description, input schema) of available tools (functions, APIs, databases, etc.). Based on the user query, the LLM can decide to call one or more tools by generating a structured output (like JSON) matching the required schema. This output is used to execute the actual external tool/function, and the result is returned to the LLM. The LLM then uses this result to formulate its final response to the user. This vastly extends the LLM's capabilities beyond its training data.
 
-```mermaid
-graph TD
-    A[User Query] --> C(LLM);
-    B[Tool Definitions] --> C;
-    C --> D[Structured Output ToolCall];
-    D --> E(External Tool);
-    E --> F[Tool Result];
-    F --> G(LLM Response Generation);
-    G --> H[Final Output];
-```
+![Tool Use](../assets/agentic-patterns/tool-use.png)
 
 Use Cases:
 *   Booking appointments using a calendar API.
@@ -150,18 +112,7 @@ The ReAct (Reasoning and Acting) architecture builds upon the Tool Use and Refle
 
 A central planner LLM breaks down a complex task into a dynamic list of subtasks, which are then delegated to specialized worker agents (often using Tool Use) for execution. This pattern tries to solve complex problems requiring multi-step reasoning by creating an intial Plan. This plan is dynamically generated based on the user input. Subtasks are then assigned to "Worker" agents that execute them, potentially in parallel if dependencies allow. An "Orchestrator" or "Synthesizer" LLM collects the results from the workers, reflects on whether the overall goal has been achieved, and either synthesizes the final output or potentially initiates a re-planning step if necessary. This reduces the cognitive load on any single LLM call, improves reasoning quality, minimizes errors, and allows for dynamic adaptation of the workflow. The key difference from Routing is that the Planner generates a *multi-step plan* rather than selecting a single next step.
 
-
-```mermaid
-graph TD
-    A[User Query] --> B(LLM Planner);
-    B --> C[Task List];
-    C -- Sub-Task 1 --> D(Worker Agent 1 ReAct);
-    C -- Sub-Task 2 --> E(Worker Agent 2 ReAct);
-    D --> F[Results];
-    E --> F;
-    F --> G(LLM Synthesizer/Reflector);
-    G --> H[Final Output];
-```
+![Planning](../assets/agentic-patterns/planning.png)
 
 Use Cases:
 *   Complex software development tasks: Breaking down "build a feature" into planning, coding, testing, and documentation subtasks.
@@ -173,15 +124,7 @@ Use Cases:
 
 Multiple distinct agents each assigned a specific role, persona, or expertise collaborate to achieve a common goal. This pattern uses autonomous or semi-autonomous agents. Each agent might have a unique role (e.g., Project Manager, Coder, Tester, Critic), specialized knowledge, or access to specific tools. They interact and collaborate, often coordinated by a central "coordinator" or "manager" agent (like the PM in the diagram), delegating tasks and sharing information to collectively solve a problem that might be too complex for a single agent. This simulates real-world team dynamics and allows for highly specialized contributions.
 
-```mermaid
-graph TD
-    A[User Query] --> B(Coordinator Agent PM);
-    B -- Assign Task 1 --> C(Specialist Agent 1);
-    B -- Assign Task 2 --> D(Specialist Agent 2);
-    C -- Result 1 --> B;
-    D -- Result 2 --> B;
-    B --> E[Final Output];
-```
+![Multi-Agent](../assets/agentic-patterns/multi-agent.png)
 
 Use Cases:
 *   Simulating debates or brainstorming sessions with different AI personas.
