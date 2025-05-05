@@ -19,6 +19,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 
 - [Function Calling Guide](guides/function-calling.ipynb) - Comprehensive guide on implementing function calling
 - [ReAct Agent](guides/langgraph-react-agent.ipynb) - Guide on building a ReAct agent with LangGraph and Gemini
+- [Agentic Patterns](guides/agentic-pattern.ipynb) - Overview of agentic patterns and how to use them with Gemini
 
 ## Examples
 
