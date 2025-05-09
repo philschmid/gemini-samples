@@ -37,6 +37,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini ADK MCP](examples/gemini-adk-mcp.ipynb) - Example using Gemini with ADK for MCP
 - [Gemini PydanticAI Agent](examples/gemini-pydanticai-agent.ipynb) - Build agents using Gemini and PydanticAI
 - [Gemini Context Caching](examples/gemini-context-caching.ipynb) - Example showcasing context caching and saving up to 75% on costs with Gemini
+- [Gemini CrewAI](examples/gemini-crewai.ipynb) - Example showcasing CrewAI with Gemini 2.5 Pro Preview
 
 
 ## Scripts
