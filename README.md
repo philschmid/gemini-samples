@@ -38,7 +38,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini PydanticAI Agent](examples/gemini-pydanticai-agent.ipynb) - Build agents using Gemini and PydanticAI
 - [Gemini Context Caching](examples/gemini-context-caching.ipynb) - Example showcasing context caching and saving up to 75% on costs with Gemini
 - [Gemini CrewAI](examples/gemini-crewai.ipynb) - Example showcasing CrewAI with Gemini 2.5 Pro Preview
-- [Sequential Function Calling](examples/sequential-function-calling.ipynb) - Example showcasing sequential function calling with Gemini
+- [Sequential Function Calling](examples/gemini-sequential-function-calling.ipynb) - Example showcasing sequential function calling with Gemini
 
 ## Scripts
 - [Gemini Browser Use](scripts/gemini-browser-use.py) - Example script for using Gemini with browser interaction.
