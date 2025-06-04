@@ -1,4 +1,4 @@
-# pip install easymcp google-genai mcp mcp_simple_arxiv markitdown-mcp
+# pip install google-genai mcp
 # requires Python 3.13+
 import os
 import asyncio
