@@ -307,65 +307,12 @@ def generate_vlog(
 
 
 if __name__ == "__main__":
-    # generate_vlog(
-    #     idea="""Tourist in London seeing all of the best places""",
-    #     character_description="Large fluffy white yeti with a black face",
-    #     character_characteristics="funny",
-    #     video_characteristics="realistic, 4k, high quality, vlog",
-    #     camera_angle="front, close-up speaking into the camera",
-    #     output_dir="yeti",
-    #     number_of_scenes=4,
-    # )
-
-    generate_video(
-        prompt="""{
-  "composition": {
-    "shot_type": "Medium full-body tracking shot",
-    "format": "16:9",
-    "camera": "ARRI Alexa Mini (ProRes 4444XQ)",
-    "lens": "20 mm spherical",
-    "camera_motion": "Steadicam dolly backwards at 1.3 m s⁻¹ with slight clockwise roll drift; micro push-in at 00:05; ends on a tilt-up to the neon sign overhead",
-    "frame_rate": "24 fps",
-    "film_grain": "subtle 35 mm grain overlay"
-  },
-  "main_subject": {
-    "description": "Female, early 20s, porcelain skin, teal-green eyes, chest-length chestnut waves with bangs",
-    "wardrobe": "High-waist black leather pants, black lace bustier top, knee-high boots, layered gold and garnet necklaces",
-    "behaviour": "Walks toward camera while keeping eye contact with her phone, performs playful hair flip and upbeat arm swing"
-  },
-  "scene_description": {
-    "location": "Soho, London",
-    "time_of_day": "Early night after light drizzle",
-    "environment": "Neon storefront signs and orange sodium streetlamps reflecting off wet asphalt; residual mist in the air; buses and black cabs streak into bokeh trails behind her"
-  },
-  "visual_details": {
-    "action": "Subject strides confidently down the slick street, rain-beaded pavement glimmering. Traffic light reflections ripple as wheels pass. At 00:02 the camera inches closer before tilting up to a vibrant magenta neon sign.",
-    "props": "Smart-phone with ring-light attachment, puddles catching neon glints"
-  },
-  "cinematographic_style": {
-    "lighting": "Mixed practical neon and sodium vapor; soft key from phone ring-light accentuates facial highlights, with rim glows from shop signage",
-    "tone": "Stylised urban nightlife realism, kinetic yet polished"
-  },
-  "emotional_tone": "Playful, upbeat, self-assured; a sense of nocturnal adventure and youthful confidence",
-  "audio_cues": {
-    "ambient": "Distant traffic whoosh, muffled club bass, light drizzle drops, occasional tire spray",
-    "voice_over": {
-      "voice_id": "EN22_Melodic",
-      "gender": "female",
-      "age": 22,
-      "accent": "Standard Southern British (RP)",
-      "timbre": "bright, melodic, slightly breathy",
-      "pace_wpm": 150,
-      "prosody": "natural"
-    }
-  },
-  "color_palette": "Vibrant neon magenta & cyan accents against warm orange streetlight highlights; cool bluish shadows; high-contrast, lightly crushed blacks",
-  "dialogue": {
-    "character": "Subject",
-    "language": "German",
-    "line": "Hey Instagram - London ruft! Ich gehe heute Abend in meiner mörderischen Lederkluft auf die Straße, weil ich nicht noch einen haufen Doku machen muss! Lasst uns gemeinsam Ebliq erkunden."
-  }
-}""",
-        fname="video_1.mp4",
+    generate_vlog(
+        idea="""Tourist in London seeing all of the best places""",
+        character_description="Large fluffy white yeti with a black face",
+        character_characteristics="funny",
+        video_characteristics="realistic, 4k, high quality, vlog",
+        camera_angle="front, close-up speaking into the camera",
         output_dir="yeti",
+        number_of_scenes=4,
     )
