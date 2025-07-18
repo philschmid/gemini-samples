@@ -159,11 +159,11 @@ class Dialogue(BaseModel):
 class Performance(BaseModel):
     """Controls for the character's animated performance in this clip."""
 
-    mouth_shape_intensity: float = Field(
+    mouth_shape_intensity: Optional[float] = Field(
         None,
         description="Clip-specific override for lip-sync exaggeration (0=subtle, 1=exaggerated). Examples: 0.85, 0.3, 1.0, 0.1.",
     )
-    eye_contact_ratio: float = Field(
+    eye_contact_ratio: Optional[float] = Field(
         None,
         description="Clip-specific override for how often the character looks at the camera. Examples: 0.7, 0.1, 1.0, 0.5.",
     )
@@ -186,7 +186,7 @@ class Clip(BaseModel):
     cinematography: Cinematography
     audio_track: AudioTrack
     dialogue: Dialogue
-    performance: Performance = None
+    performance: Optional[Performance] = Field(default=None)
     duration_sec: int = Field(
         ...,
         description="The exact duration of this clip in seconds. Examples: 8, 15, 3, 30, 45.",
