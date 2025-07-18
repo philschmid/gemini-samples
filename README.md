@@ -45,6 +45,9 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 ## Scripts
 - [Gemini Browser Use](scripts/gemini-browser-use.py) - Example script for using Gemini with browser interaction.
 - [Gemini MCP Agent](scripts/gemini-mcp-agent.py) - A basic agent script demonstrating MCP.
+- [Gemini MCP Pipedream](scripts/gemini-mcp-pipedream.py) - A basic agent script demonstrating MCP with Pipedream.
+- [Gemini Veo3 Optimized Prompt](scripts/gemini-veo-meta.py) - A script using Gemini 2.5 to optimize prompts for Gemini Veo3.
+- [Gemini Veo3 Vlogs](scripts/veo3-generate-viral-vlogs.py) - Automatic video generation with Gemini Veo3 combined multiple video clips.
 
 ### JavaScript Examples
 
