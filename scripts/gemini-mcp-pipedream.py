@@ -41,11 +41,11 @@ mcp_client = Client(
                 "transport": "http",
                 "url": "https://remote.mcp.pipedream.net",
                 "headers": {
-                    # Note if you don't have a PIPEDREAM_API_KEY, we can use a random one for development
-                    # this will create a ephemeral app for you, which will be deleted short time.
+                    # note if you don't have Pipedream Developer credentials, you can use a temporary, short-lived token for development
+                    # this will create a ephemeral account for you, which will be deleted after a short time.
+                    # refer to Pipedream docs for more information: https://pipedream.com/docs/connect/mcp/developers
                     "Authorization": f"Bearer {os.environ.get('PIPEDREAM_API_KEY',f'devtok_{uuid4()}')}",
-                    # see for available apps: https://mcp.pipedream.com/
-                    # "x-pd-app-slug": "notion,gmail",
+                    # see here for available apps: https://pipedream.com/docs/connect/mcp/app-discovery
                     "x-pd-app-slug": "gmail, google_calendar",
                 },
             }
