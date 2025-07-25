@@ -94,11 +94,10 @@ def generate_images(
 
     try:
         response = client.models.generate_images(
-            model="imagen-4.0-ultra-generate-preview-06-06",
-            # model="imagen-4.0-generate-preview-06-06",
+            model="imagen-4.0-generate-preview-06-06",
             prompt=prompt,
             config=genai.types.GenerateImagesConfig(
-                # number_of_images=num_images,
+                number_of_images=num_images,
                 aspect_ratio=aspectRatio,
             ),
         )
