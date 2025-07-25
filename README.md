@@ -48,6 +48,7 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini MCP Pipedream](scripts/gemini-mcp-pipedream.py) - A basic agent script demonstrating MCP with Pipedream.
 - [Gemini Veo3 Optimized Prompt](scripts/gemini-veo-meta.py) - A script using Gemini 2.5 to optimize prompts for Gemini Veo3.
 - [Gemini Veo3 Vlogs](scripts/veo3-generate-viral-vlogs.py) - Automatic video generation with Gemini Veo3 combined multiple video clips.
+- [Gemini Image Meta](scripts/gemini-image-meta.py) - Generate images with Gemini and Imagen.
 
 ### JavaScript Examples
 
