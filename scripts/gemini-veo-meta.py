@@ -1,19 +1,18 @@
 """This script generates multi-scene videos using the Veo 3 model.
 
 This script demonstrates how to generate a short video or vlog from an idea.
-It works in three main steps:
-1.  **Generate Scenes**: Based on an idea, it generates a series of scene
-    prompts using a Gemini model. These prompts guide the video generation.
-2.  **Generate Videos**: For each scene prompt, it calls the Veo 3 model to
-    generate a short video clip.
-3.  **Merge Videos**: It uses the MoviePy library to combine the individual
-    video clips into a single final video.
+It works in 5 main steps:
+1. Based on an idea, it generates a series of scene prompts using Gemini 2.5.
+2. Generates a Image based on the first scene using Imagen 3
+3. For each scene prompt Veo 3 (fast) generates a video clip.
+4. Uses Gemini 2.0 image editing to make sure the starting images fits the scenes
+5. Combine the individual video clips into a single final video using MoviePy
 
 To use this script, install the necessary libraries:
-    uv pip install moviepy google-genai pydantic
+    uv pip install pillow google-genai pydantic moviepy
 
 Then, run the script from your terminal:
-    python examples/veo3-generate-viral-vlogs.py
+    python examples/gemini-veo-meta.py
 """
 
 # pip install pillow google-genai pydantic moviepy
