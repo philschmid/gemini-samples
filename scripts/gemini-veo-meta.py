@@ -1,11 +1,49 @@
+"""This script generates multi-scene videos using the Veo 3 model.
+
+This script demonstrates how to generate a short video or vlog from an idea.
+It works in three main steps:
+1.  **Generate Scenes**: Based on an idea, it generates a series of scene
+    prompts using a Gemini model. These prompts guide the video generation.
+2.  **Generate Videos**: For each scene prompt, it calls the Veo 3 model to
+    generate a short video clip.
+3.  **Merge Videos**: It uses the MoviePy library to combine the individual
+    video clips into a single final video.
+
+To use this script, install the necessary libraries:
+    uv pip install moviepy google-genai pydantic
+
+Then, run the script from your terminal:
+    python examples/veo3-generate-viral-vlogs.py
+"""
+
+# pip install pillow google-genai pydantic moviepy
+
+from io import BytesIO
 import json
 import os
+import re
 import time
 from google import genai
-from pydantic import BaseModel, Field, AnyUrl
-from typing import List, Optional
+from google.genai import types
+from pydantic import BaseModel
+from moviepy import VideoFileClip, concatenate_videoclips
+from PIL import Image
+import logging
+
+# Configure logging to show info from this script, and warnings from others.
+logging.basicConfig(
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 client = genai.Client()
+
+import pydantic
+from typing import List, Optional
+
+# Basic types for validation
+from pydantic import BaseModel, Field, AnyUrl
 
 
 class Shot(BaseModel):
@@ -159,11 +197,11 @@ class Dialogue(BaseModel):
 class Performance(BaseModel):
     """Controls for the character's animated performance in this clip."""
 
-    mouth_shape_intensity: Optional[float] = Field(
+    mouth_shape_intensity: float = Field(
         None,
         description="Clip-specific override for lip-sync exaggeration (0=subtle, 1=exaggerated). Examples: 0.85, 0.3, 1.0, 0.1.",
     )
-    eye_contact_ratio: Optional[float] = Field(
+    eye_contact_ratio: float = Field(
         None,
         description="Clip-specific override for how often the character looks at the camera. Examples: 0.7, 0.1, 1.0, 0.5.",
     )
@@ -186,7 +224,7 @@ class Clip(BaseModel):
     cinematography: Cinematography
     audio_track: AudioTrack
     dialogue: Dialogue
-    performance: Optional[Performance] = Field(default=None)
+    performance: Performance
     duration_sec: int = Field(
         ...,
         description="The exact duration of this clip in seconds. Examples: 8, 15, 3, 30, 45.",
@@ -264,18 +302,37 @@ class VideoSchema(BaseModel):
     )
 
 
+client = genai.Client()
+
+
 def generate_scenes(
     idea: str,
     output_dir: str,
+    number_of_scenes: int,
 ) -> list[Scene]:
+    """Generates scene descriptions for a video based on an idea.
+
+    Args:
+        idea: The core concept or topic of the video.
+        character_description: A visual description of the main character.
+        character_characteristics: The personality traits of the character.
+        number_of_scenes: The number of scenes to generate.
+        video_type: The type of video (e.g., 'vlog', 'commercial').
+        video_characteristics: The overall style of the video.
+        camera_angle: The primary camera perspective.
+        output_dir: The directory to save the generated scene descriptions.
+
+    Returns:
+        A list of Scene objects, each containing a description for a scene.
+    """
     os.makedirs(output_dir, exist_ok=True)
+    logger.info(f"Generating {number_of_scenes} scenes for the idea: '{idea}'")
 
     response = client.models.generate_content(
         model="gemini-2.5-pro",
         contents=f"""
         {idea}
-        
-        The video can only be a maximum of 8 seconds. Make sure to always include a dialogue.
+        The video should have a maximum of {number_of_scenes} scenes, each with a duration of 8 seconds.
         """,
         config=genai.types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -284,31 +341,54 @@ def generate_scenes(
     )
 
     video_schema = json.loads(response.text)
+
+    with open(os.path.join(output_dir, "script.json"), "w") as f:
+        f.write(response.text)
+
     return video_schema
 
 
 def generate_video(
     prompt: str,
+    image: Image,
+    aspect_ratio: str = "16:9",
     output_dir: str = "videos",
     fname: str = "video.mp4",
 ) -> str:
+    """Generates a single video clip from a text prompt.
+
+    Args:
+        prompt: The text prompt describing the video content.
+        negative_prompt: A description of what to avoid in the video.
+        aspect_ratio: The aspect ratio of the video (e.g., "16:9").
+        output_dir: The directory to save the generated video file.
+        fname: The filename for the saved video.
+
+    Returns:
+        The file path of the generated video.
+    """
+    # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
 
     # Generate video
-    print(f"Generating video from prompt: {prompt[:100]}...")
+    logger.info(f"Generating video in {aspect_ratio} from prompt: {prompt[:100]}...")
     operation = client.models.generate_videos(
         model="veo-3.0-generate-preview",
         prompt=prompt,
+        image=image,
         config=genai.types.GenerateVideosConfig(
-            aspect_ratio="16:9",
-            person_generation="allow_all",
+            aspect_ratio="16:9",  # currently only 16:9 is supported
+            # person_generation="allow_all",
         ),
     )
     # Wait for videos to generate
     while not operation.done:
-        print("Waiting for video to generate...")
+        logger.info("Waiting for video to generate...")
         time.sleep(10)
         operation = client.operations.get(operation)
+
+    if operation.response.generated_videos is None:
+        raise RuntimeError(operation.response)
 
     for video in operation.response.generated_videos:
         client.files.download(file=video.video)
@@ -317,49 +397,196 @@ def generate_video(
     return os.path.join(output_dir, fname)
 
 
-def generate(
-    idea: str,
-    output_dir: str = "videos",
-    filename: str = "video.mp4",
-) -> None:
-    """Generates a complete video with multiple scenes."""
+def generate_image(
+    prompt: str,
+    output_dir: str = "images",
+    fname: str = "image.png",
+) -> Image:
+    """Generates an image from a text prompt."""
     os.makedirs(output_dir, exist_ok=True)
+    logger.info(f"Generating image with prompt: {prompt[:100]}...")
+
+    image = client.models.generate_images(
+        model="imagen-3.0-generate-002",
+        prompt=prompt,
+        config=genai.types.GenerateImagesConfig(
+            aspect_ratio="16:9",
+        ),
+    )
+
+    image.generated_images[0].image.save(os.path.join(output_dir, fname))
+
+    return image.generated_images[0].image
+
+
+def edit_image(
+    image: Image,
+    prompt: str,
+    output_dir: str = "images",
+    fname: str = "edited_image.png",
+) -> types.Image:
+    """Edits an image with a text prompt."""
+
+    prompt = f"Edit the image to fit the following prompt: {prompt}"
+    logger.info(f"Editing image with prompt: {prompt[:100]}...")
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-preview-image-generation",
+        contents=[
+            {
+                "role": "user",
+                "parts": [
+                    {"text": prompt},
+                    {
+                        "inline_data": {
+                            "mime_type": image.mime_type,
+                            "data": image.image_bytes,
+                        }
+                    },
+                ],
+            },
+        ],
+        config=types.GenerateContentConfig(
+            response_modalities=["TEXT", "IMAGE"],
+        ),
+    )
+
+    for part in response.candidates[0].content.parts:
+        if part.text is not None:
+            logger.info(part.text)
+        elif part.inline_data is not None:
+            image = Image.open(BytesIO((part.inline_data.data)))
+            image.save(os.path.join(output_dir, fname))
+
+    return types.Image.from_file(location=os.path.join(output_dir, fname))
+
+
+def merge_videos(
+    video_files: list[str], output_file: str = "vlog.mp4", output_dir: str = "videos"
+) -> str:
+    """Merges multiple video files into a single video.
+
+    Args:
+        video_files: A list of paths to the video files to merge.
+        output_file: The filename for the final merged video.
+        output_dir: The directory to save the final video.
+
+    Returns:
+        The file path of the merged video.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    logger.info(f"Merging {len(video_files)} video files into {output_file}")
+    # Load each video clip
+    clips = [VideoFileClip(file) for file in video_files]
+
+    # Concatenate the video clips
+    final_clip = concatenate_videoclips(clips)
+
+    # Write the final video file
+    output_path = os.path.join(output_dir, output_file)
+    final_clip.write_videofile(
+        output_path,
+        codec="libx264",
+        audio_codec="aac",
+    )
+
+    return os.path.join(output_dir, output_file)
+
+
+def generate_vlog(
+    idea: str,
+    number_of_scenes: int = 4,
+    aspect_ratio: str = "16:9",
+    output_dir: str = "videos",
+) -> None:
+    """Generates a complete vlog with multiple scenes.
+
+    This function orchestrates the entire process:
+    1. Generates scene descriptions.
+    2. Generates a video for each scene.
+    3. Merges the videos into a final vlog.
+
+    Args:
+        idea: The core concept for the vlog.
+        character_description: A description of the main character.
+        character_characteristics: The personality of the character.
+        video_type: The type of video to create.
+        video_characteristics: The visual style of the vlog.
+        camera_angle: The camera angles to use.
+        aspect_ratio: The aspect ratio of the final video.
+        number_of_scenes: The number of scenes in the vlog.
+        output_dir: The directory to save all generated files (scenes and videos).
+    """
+    # Create a unique subdirectory for this vlog
+    vlog_subdir_name = re.sub(r"[^a-z0-9]+", "-", idea.lower()).strip("-")[:35]
+    vlog_output_dir = os.path.join(output_dir, vlog_subdir_name)
+    os.makedirs(vlog_output_dir, exist_ok=True)
+    logger.info(f"Starting vlog generation for idea: '{idea}'")
+    logger.info(f"Output will be saved to '{vlog_output_dir}'")
 
     script = generate_scenes(
         idea=idea,
-        output_dir=output_dir,
+        output_dir=vlog_output_dir,
+        number_of_scenes=number_of_scenes,
     )
 
-    generate_video(
-        json.dumps(script),
-        fname=filename,
-        output_dir=output_dir,
+    video_files = []
+
+    logger.info("Generating start image...")
+    start_image = generate_image(
+        prompt=json.dumps(
+            {"characters": script["characters"], "clips": [script["clips"][0]]}
+        ),
+        output_dir=vlog_output_dir,
+        fname="start_image.png",
     )
+
+    for n, scene in enumerate(script["clips"]):
+        logger.info(f"Processing scene {n + 1}/{len(script['clips'])}")
+        scene_object = {"characters": script["characters"], "clips": [scene]}
+
+        if n > 0:
+            logger.info(f"Editing image for scene {n + 1}")
+            scene_image = edit_image(
+                image=start_image,
+                prompt=json.dumps(scene_object),
+                output_dir=vlog_output_dir,
+                fname=f"scene_{n}_image.png",
+            )
+        else:
+            scene_image = start_image
+
+        logger.info(f"Generating video for scene {n + 1}")
+        video_file = generate_video(
+            json.dumps(scene_object),
+            scene_image,
+            fname=f"video_{n}.mp4",
+            output_dir=vlog_output_dir,
+            aspect_ratio=aspect_ratio,
+        )
+        video_files.append(video_file)
+    merge_videos(video_files, "vlog.mp4", output_dir=vlog_output_dir)
 
 
 if __name__ == "__main__":
     ideas = [
-        "A Game of Thrones-style energy drink commercial.",
-        "A yeti being a confused tourist in central London.",
-        "Film noir detective interrogating a washing machine for a missing sock.",
-        "An ancient wizard getting frustrated while on hold with customer service.",
-        "Napoleon Bonaparte struggling to unbox a new smartphone.",
-        "A high-fashion catwalk taking place in a chaotic children's playroom.",
-        "Roman legionaries discovering a squeaky rubber chicken in ancient ruins.",
-        "A dragon trying to do data entry with its giant claws.",
-        "Alien first contact failing because of a bad Wi-Fi connection.",
-        "A garden gnome meticulously planning its escape from the suburbs.",
+        ("A realistic energy drink commercial for athletes.", 3),
+        (
+            "A stormtrooper being a confused tourist in central London complaining about the weather.",
+            4,
+        ),
+        ("A cartoon for kids about how addition works", 3),
     ]
 
-    for idea in ideas:
+    for idea, number_of_scenes in ideas:
         try:
-            generate(
+            generate_vlog(
                 idea=idea,
-                filename=f"{idea[:30].lower().replace(' ', '-')}.mp4",
+                number_of_scenes=number_of_scenes,
             )
         except Exception as e:
             print("Rerunning...")
-            generate(
+            generate_vlog(
                 idea=idea,
-                filename=f"{idea[:30].lower().replace(' ', '-')}.mp4",
+                number_of_scenes=number_of_scenes,
             )
