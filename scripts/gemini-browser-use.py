@@ -42,7 +42,6 @@ async def setup_browser(headless: bool = False):
     """Initialize and configure the browser"""
     browser = BrowserSession(
         headless=headless,
-        deterministic_rendering=headless,
         wait_for_network_idle_page_load_time=3.0,  # Increased wait time
         highlight_elements=True,  # Keep highlighting for headed mode debugging
         # save_recording_path="./recordings", # Keep recording if needed
@@ -57,7 +56,22 @@ DO NOT simply repeat the exact same action.
 Instead use the `go_back` action and try navigating to the target differently. 
 If that doesn't work, try a different search query on google.
 """
-# --- End Failure Recovery Prompt ---
+
+SUMMARIZER_PROMPT = """You are an AI assistant specializing in process analysis and summarization. Your task is to read a given text that describes a sequence of events and create a structured summary of the steps an agent took.
+
+Your summary should chronologically detail the agent's actions, observations, and decisions that led to the final outcome.
+
+# Output Format:
+Present the summary as a numbered list. Group steps together. Each group must be clearly articulated and follow this strict format:
+
+**Steps [from - to]:**
+- **Observation:** Describe what the agent saw, heard, or became aware in these steps.
+- **Action:** Describe the specific action(s) the agent performed.
+- **Decision/Result:** Explain the decision the agent made based on the observation, or the immediate result of their action.
+
+# Context
+
+{history}"""
 
 
 async def agent_loop(llm, browser_session, query, initial_url=None):
@@ -83,6 +97,65 @@ async def agent_loop(llm, browser_session, query, initial_url=None):
     # Start Agent and browser, passing the logging hook
     result_history = await agent.run()
 
+    with open("history.md", "w") as f:
+        history = "Here is a history of all steps taken by the Agent to end up with the final result."
+        for h in result_history.history:
+            # Safely access metadata and step_number
+            metadata = getattr(h, "metadata", None)
+            step_number = getattr(metadata, "step_number", "N/A")
+
+            # Safely access model_output and thinking
+            model_output = getattr(h, "model_output", None)
+            thinking = (
+                getattr(model_output, "thinking", "No thinking process recorded.")
+                or "No thinking process recorded."
+            )
+            memory = (
+                getattr(model_output, "memory", "No memory recorded.")
+                or "No memory recorded."
+            )
+            evaluation = (
+                getattr(
+                    model_output, "evaluation_previous_goal", "No evaluation recorded."
+                )
+                or "No evaluation recorded."
+            )
+
+            # Safely access result and extracted_content
+            result_list = getattr(h, "result", [])
+            content_parts = []
+            if result_list:
+                for res in result_list:
+                    extracted = getattr(res, "extracted_content", None)
+                    if extracted:
+                        content_parts.append(extracted)
+
+            content = (
+                "\n".join(content_parts) if content_parts else "No content extracted."
+            )
+
+            history += f"""
+# Step: {step_number}
+## Thinking
+{thinking}
+## Evaluation
+{evaluation}
+## Memory
+{memory}
+## Result
+{content}
+
+"""
+
+        f.write(history)
+
+        with open("summary.md", "w") as f:
+
+            response = await llm.get_client().aio.models.generate_content(
+                model=llm.model, contents=SUMMARIZER_PROMPT.format(history=history)
+            )
+            f.write(response.text)
+
     return result_history.final_result() if result_history else "No result found"
 
 
@@ -102,8 +175,9 @@ async def main():
     )
     parser.add_argument(
         "--headless",
-        action="store_true",
-        help="Run the browser in headless mode.",
+        default=False,
+        # action="store_true",
+        # help="Run the browser in headless mode.",
     )
     args = parser.parse_args()
 
