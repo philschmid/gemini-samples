@@ -2,9 +2,11 @@
 
 The [Gemini CLI](https://github.com/google-gemini/gemini-cli) is an open-source AI agent that brings the power of Gemini directly into your terminal, allowing you to perform a wide range of tasks such as coding, problem-solving, and task management using natural language. This cheatsheet provides a quick reference for installing, configuring, and using the Gemini CLI, with a focus on users authenticating via a Gemini API key.
 
+![Gemini CLI Architecture](/static/blog/gemini-cli-cheatsheet/architecture.png)
+
 ## 🚀 Getting Started
 
-### 1. Installation
+### Installation
 
 **Install Globally:**
 ```bash
@@ -16,7 +18,7 @@ npm install -g @google/gemini-cli
 npx @google/gemini-cli
 ```
 
-### 2. Authentication with a Gemini API Key
+### Authentication with a Gemini API Key
 
 Authenticate with an API key before first use. See the [authentication guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/authentication.md) for details.
 
@@ -36,7 +38,7 @@ Authenticate with an API key before first use. See the [authentication guide](ht
     # In .gemini/.env
     GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
     ```
-### 3. Basic Invocation
+### Basic Invocation
 
 **Interactive Mode (REPL):**
 Start a conversational session.
@@ -65,6 +67,7 @@ gemini --sandbox -p "your prompt"
 **Other Flags:**
 
 - `-m, --model <model>`: Use a specific model.
+- `-i, --prompt-interactive <prompt>`: Start an interactive session with an initial prompt.
 - `-d, --debug`: Enable debug output.
 - `--yolo`: Auto-approve all tool calls.
 - `--checkpointing`: Save a project snapshot before file modifications. Use `/restore` to revert changes.
@@ -78,7 +81,7 @@ gemini --sandbox -p "your prompt"
 Customize the CLI by creating a `settings.json` file. Settings are applied with the following precedence:
 1.  **Project:** `.gemini/settings.json` (overrides user and system settings).
 2.  **User:** `~/.gemini/settings.json` (overrides system settings).
-3.  **System:** `/etc/gemini-cli/settings.json` (applies to all users).
+3.  **System:** `/etc/gemini-cli/settings.json` (applies to all users, has lowest precedence).
 
 **Example `settings.json`:**
 ```json
@@ -86,25 +89,37 @@ Customize the CLI by creating a `settings.json` file. Settings are applied with 
   "theme": "GitHub",
   "autoAccept": false,
   "sandbox": "docker",
-  "checkpointing": {
-    "enabled": true
-  },
-  "fileFiltering": {
-    "respectGitIgnore": true
-  },
-  "usageStatisticsEnabled": true
+  "vimMode": true,
+  "checkpointing": { "enabled": true },
+  "fileFiltering": { "respectGitIgnore": true },
+  "usageStatisticsEnabled": true,
+  "includeDirectories": ["../shared-library", "~/common-utils"],
+  "chatCompression": { "contextPercentageThreshold": 0.6 },
+  "customThemes": {
+    "MyCustomTheme": {
+      "name": "MyCustomTheme", "type": "custom",
+      "Background": "#181818", "Foreground": "#F8F8F2",
+      "LightBlue": "#82AAFF", "AccentBlue": "#61AFEF", "AccentPurple": "#C678DD",
+      "AccentCyan": "#56B6C2", "AccentGreen": "#98C379", "AccentYellow": "#E5C07B",
+      "AccentRed": "#E06C75", "Comment": "#5C6370", "Gray": "#ABB2BF"
+    }
+  }
 }
 ```
 *   `autoAccept`: Auto-approve safe, read-only tool calls.
 *   `sandbox`: Isolate tool execution (e.g., `true`, `"docker"`, or `"podman"`).
+*   `vimMode`: Enable Vim-style editing for the input prompt.
 *   `checkpointing`: Enable the `/restore` command to undo file changes.
+*   `includeDirectories`: Define a multi-directory workspace.
+*   `chatCompression`: Configure automatic chat history compression.
+*   `customThemes`: Define your own color themes.
 *   `usageStatisticsEnabled`: Set to `false` to disable usage statistics.
 
 All details in the [configuration guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/configuration.md).
 
 ### Context Files (`GEMINI.md`)
 
-Use `GEMINI.md` files to provide instructions to the model and tailor it to your project.
+Use `GEMINI.md` files to provide instructions to the model and tailor it to your project. Use `/init` to generate a starting `GEMINI.md` file for your project.
 
 **Hierarchical Loading:**
 The CLI combines `GEMINI.md` files from multiple locations. More specific files override general ones. The loading order is:
@@ -132,6 +147,14 @@ You can organize `GEMINI.md` files by importing other Markdown files with the `@
 
 More in the [Full context file guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/configuration.md#context-files-geminimd).
 
+### Ignoring Files with `.geminiignore`
+Create a `.geminiignore` file in your project root to exclude files and directories from Gemini's tools, similar to `.gitignore`.
+```
+# .geminiignore
+/backups/
+*.log
+secret-config.json
+```
 
 ## 🛠️ Working with Tools
 
@@ -144,7 +167,12 @@ More in the [Full context file guide](https://github.com/google-gemini/gemini-cl
 
 ### Custom Tools via MCP Servers
 
-Extend the CLI with your own tools by running Model Context Protocol (MCP) servers and configuring them in any `settings.json`.
+Extend the CLI with your own tools by running Model Context Protocol (MCP) servers. Manage servers via `settings.json` or with the `gemini mcp <add|list|remove>` commands.
+
+**Capabilities:**
+*   **OAuth 2.0 Support:** Securely connect to remote servers.
+*   **Rich Content Returns:** Tools can return multi-modal content like text and images.
+*   **Prompts as Commands:** Expose predefined prompts from your server as new slash commands in the CLI.
 
 **Example `mcpServers` configuration:**
 ```json
@@ -196,22 +224,31 @@ Using OAuth take a look at [mcp-server.md](https://github.com/google-gemini/gemi
 | `/memory refresh` | Reload all `GEMINI.md` files. |
 | `/chat save <tag>` | Save the current conversation with a tag. |
 | `/chat resume <tag>`| Resume a saved conversation. |
+| `/chat list`| List saved conversation tags. |
 | `/restore` | List or restore a project state checkpoint. |
 | `/auth` | Change the current authentication method. |
 | `/bug` | File an issue or bug report about the Gemini CLI. |
 | `/help` | Display help information and available commands. |
 | `/theme` | Change the CLI's visual theme. |
 | `/quit` | Exit the Gemini CLI. |
+| `/ide` | Manage integration with your IDE (e.g., `install`, `enable`). |
+| `/settings`| Open a friendly editor to change your `settings.json` file. |
+| `/vim` | Toggle Vim mode for input editing. |
+| `/init` | Generate a starting `GEMINI.md` context file for your project. |
+| `/directory` | Manage directories in a multi-directory workspace (e.g., `add`, `show`). |
 
 ### Context Commands (`@`)
 
-Reference files or directories in your prompt. The CLI respects `.gitignore` by default.
+Reference files or directories in your prompt. The CLI respects `.gitignore` and `.geminiignore`. You can also reference images, PDFs, audio, and video files.
 
 **Include a single file:**
 ```
 > Explain this code to me. @./src/main.js
 ```
-
+**Include an image:**
+```
+> Describe what you see in this screenshot. @./ux-mockup.png
+```
 **Include a whole directory (recursively):**
 ```
 > Refactor the code in this directory to use async/await. @./src/
@@ -219,7 +256,7 @@ Reference files or directories in your prompt. The CLI respects `.gitignore` by 
 
 ### Shell Commands (`!`)
 
-Run commands shell commands directly in the CLI.
+Run shell commands directly in the CLI.
 
 **Run a single command:**
 ```
@@ -229,7 +266,21 @@ Run commands shell commands directly in the CLI.
 **Toggle Shell Mode:**
 Enter `!` by itself to switch to a persistent shell mode. Type `!` again to exit.
 
+### Keyboard Shortcuts
+| Shortcut | Description |
+|---|---|
+| `Ctrl+L` | Clear the screen. |
+| `Ctrl+V` | Paste text or an image from the clipboard. |
+| `Ctrl+Y` | Toggle YOLO mode (auto-approve all tool calls). |
+| `Ctrl+X` | Open the current prompt in an external editor. |
+
 ## ✨ Advanced Features
+
+### IDE Integration (VS Code)
+Connect the CLI to VS Code for a more powerful, context-aware experience.
+- **Workspace Context:** Automatically gets your recent files, cursor position, and selected text.
+- **Native Diffing:** View and approve code changes directly in your editor's diff viewer.
+- **Commands:** Use `/ide install` to set up and `/ide enable` to connect.
 
 ### Custom Commands
 
