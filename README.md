@@ -28,7 +28,6 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini with Google Search](examples/gemini-google-search.ipynb) - Enable Google Search integration for up-to-date information
 - [Structured Outputs](examples/gemini-structured-outputs.ipynb) - Generate structured JSON outputs using Pydantic
 - [Meta Prompts](examples/gemini-meta-prompt-structured-outputs.ipynb) - Generate JSON schemas dynamically using meta prompts
-- [Audio Transcription](examples/gemini-transcribe-with-timestamps.ipynb) - Transcribe audio with precise timestamps
 - [Gemini MCP Example](examples/gemini-mcp-example.ipynb) - Example showcasing Model Context Protocol (MCP)
 - [Gemini Analyze & Transcribe YouTube](examples/gemini-analyze-transcribe-youtube.ipynb) - Analyze and transcribe YouTube videos
 - [Gemini Native Image Output](examples/gemini-native-image-out.ipynb) - Generate images directly with Gemini 2.0 Flash experimental model
@@ -41,6 +40,10 @@ This repository contains personal tiny samples, snippets and guides showcasing c
 - [Gemini CrewAI](examples/gemini-crewai.ipynb) - Example showcasing CrewAI with Gemini 2.5 Pro Preview
 - [Sequential Function Calling](examples/gemini-sequential-function-calling.ipynb) - Example showcasing sequential function calling with Gemini
 - [Gemini Batch API](examples/gemini-batch-api.ipynb) - Example showcasing batch API with Gemini
+- [Gemini Context URL](examples/gemini-context-url.ipynb) - Example on how to use URLs as context with Gemini
+- [Gemini Few-shot PDF](examples/gemini-fewshot-pdf.ipynb) - Few-shot PDF extraction with Gemini
+- [Gemini Text-to-Speech](examples/gemini-text-to-speech.ipynb) - Example for using text-to-speech with Gemini
+- [OpenAI SDK with Gemini](examples/openai.ipynb) - Use OpenAI SDK with Gemini
 
 ## Scripts
 - [Gemini Browser Use](scripts/gemini-browser-use.py) - Example script for using Gemini with browser interaction.
