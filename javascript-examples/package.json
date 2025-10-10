@@ -1,8 +1,11 @@
 {
   "scripts": {
-    "start": "node gemini-native-image-out.js"
+    "start": "node gemini-native-image-out.js",
+    "stagehand": "node gemini-stagehand.js"
   },
   "dependencies": {
-    "@google/genai": "^0.3.1"
+    "@browserbasehq/stagehand": "^2.5.2",
+    "@google/genai": "^0.3.1",
+    "zod": "^3.24.3"
   }
 }
