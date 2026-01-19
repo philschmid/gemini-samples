@@ -101,10 +101,11 @@ def rgb_to_hsv_array(rgb_array: np.ndarray) -> np.ndarray:
 def remove_green_screen_hsv(
     image: Image.Image,
     hue_center: float = 120,
-    hue_range: float = 60,
-    min_saturation: float = 20,
-    min_value: float = 20,
-    edge_cleanup: bool = True
+    hue_range: float = 25,
+    min_saturation: float = 75,
+    min_value: float = 70,
+    dilation_iterations: int = 2,
+    erosion_iterations: int = 0
 ) -> Image.Image:
     """
     Remove green screen using HSV color space for better detection.
@@ -137,15 +138,16 @@ def remove_green_screen_hsv(
     )
 
     # Apply morphological cleanup to remove edge artifacts
-    if edge_cleanup:
+    if dilation_iterations > 0 or erosion_iterations > 0:
         from scipy import ndimage
 
-        # Dilate the mask slightly to catch edge pixels (1 iteration to preserve white outline)
-        green_mask = ndimage.binary_dilation(green_mask, iterations=1)
+        # Dilate the mask to catch anti-aliased edge pixels
+        if dilation_iterations > 0:
+            green_mask = ndimage.binary_dilation(green_mask, iterations=dilation_iterations)
 
-        # Then erode back to original size (this removes isolated noise)
-        # but keeps the expanded green areas
-        green_mask = ndimage.binary_erosion(green_mask, iterations=1)
+        # Optionally erode back (removes isolated noise)
+        if erosion_iterations > 0:
+            green_mask = ndimage.binary_erosion(green_mask, iterations=erosion_iterations)
 
     # Make green pixels transparent
     alpha = data[:, :, 3].copy()
@@ -359,28 +361,24 @@ def create_sticker(
         raw_image.save(raw_filename)
         print(f"📸 Raw image saved: {raw_filename}")
 
-    # Step 2: HSV-based green removal (broad color detection)
+    # Step 2: HSV-based green removal
     print("🔧 Pass 1: HSV-based green removal...")
     transparent_image = remove_green_screen_hsv(
         raw_image,
-        hue_center=120,  # Pure green hue
-        hue_range=50,    # Catch greens from ~70 to ~170 degrees
-        min_saturation=15,  # Even less saturated greens
-        min_value=15,    # Even darker greens
-        edge_cleanup=True
+        hue_center=120,       # Pure green hue
+        hue_range=25,         # Tight range around pure green
+        min_saturation=75,    # Only highly saturated greens (preserves logo greens)
+        min_value=70,         # Only bright greens
+        dilation_iterations=2,  # Catch anti-aliased edge pixels
+        erosion_iterations=0
     )
 
-    # Step 3: Aggressive removal to catch any remaining green-tinted pixels
-    print("🔧 Pass 2: Aggressive green removal...")
-    transparent_image = remove_green_screen_aggressive(
-        transparent_image,
-        green_threshold=1.2,  # Only clearly green pixels
-        edge_pixels=0         # No dilation to preserve white outline
-    )
+    # Step 3: Skip aggressive removal (disabled - causes speckles in subject)
+    # transparent_image = remove_green_screen_aggressive(...)
 
     # Step 4: Clean up any semi-transparent edge artifacts
     print("✨ Cleaning up edges...")
-    transparent_image = cleanup_edges(transparent_image, threshold=128)
+    transparent_image = cleanup_edges(transparent_image, threshold=64)
 
     # Step 5: Save as PNG
     save_transparent_png(transparent_image, output_filename)
@@ -398,29 +396,8 @@ def create_sticker(
 prompt = "a cute happy cat with big eyes"
 
 sticker1 = create_sticker(
-    prompt="a cute happy cat with big eyes",
+    prompt=prompt,
     output_filename="cat.png",
     image_size="2K",
     save_raw=True
 )
-
-
-# In[30]:
-
-
-from IPython.display import Markdown, display
-display(Markdown("""
-| Raw (Green Screen) | Processed (Transparent) |
-|:--:|:--:|
-| ![raw](cat_raw.png) | ![processed](cat.png) |
-"""))
-
-
-# ## Using Your Stickers
-# 
-# The generated PNG files have proper alpha channels and can be used in:
-# - Design software (Figma, Photoshop, etc.)
-# - Presentation tools
-# - Chat applications
-# - Print-on-demand services
-# - Mobile apps
